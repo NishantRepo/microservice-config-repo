@@ -1,0 +1,85 @@
+
+server.port: 9090
+
+spring:
+  application:
+    name: nov-practice
+  datasource:
+    url: jdbc:mysql://localhost:3306/practice_db
+    username: root
+    password: root1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  # MYSQL database configuration
+  mysql:
+    datasource:
+      url: jdbc:mysql://localhost:3306/practice_db
+      username: root
+      password: root1234
+      driver-class-name: com.mysql.cj.jdbc.Driver
+    # H2 database configuration
+    h2:
+      url: jdbc:h2:mem:studentdb
+      driverClassName: org.h2.Driver
+      username: sa
+      password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+        register: true
+        service-name: ${spring.application.name}
+        instance-id: ${spring.application.name}:${server.port}
+        prefer-ip-address: true
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      studentCircuitBraker:
+        base-config: default
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5  # Minimum calls required before calculating failure rate
+        failureRateThreshold: 50 # Failure percentage required to open circuit
+        waitDurationInOpenState: 5s   # Time circuit remains OPEN
+        permittedNumberOfCallsInHalfOpenState: 3 # Number of test calls allowed in HALF_OPEN
+
+  retry:
+    instances:
+      userApi:
+        maxAttempts: 3
+        waitDuration: 2s
+  ratelimiter:
+    instances:
+      userApiRateLimiter:
+        limitForPeriod: 5
+        limitRefreshPeriod: 10s
+        timeoutDuration: 0
+      globalRateLimiter:
+        limitForPeriod: 10
+        limitRefreshPeriod: 10s
+        timeoutDuration: 0
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      enabled: true
+      show-details: always

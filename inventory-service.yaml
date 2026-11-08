@@ -1,0 +1,55 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: inventory-service
+  kafka:
+    consumer:
+      properties.spring.json.trusted.packages: "*"
+      bootstrap-servers: localhost:9092 # Kafka broker address
+      group-id: inventory-group # Consumer group ID
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    producer:
+      bootstrap-servers: localhost:9092 # Kafka broker address
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        enable.idempotence: true
+  #  config:
+  #    import: file:C:\Users\ujwal\JavaProject\spring-kafka-realtime\common-model-service\src\main\resources\application.yaml
+  output:
+    ansi:
+      enabled: always
+  datasource:
+    url: jdbc:h2:mem:testdb  # In-memory database
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true  # Enable the H2 console
+      path: /h2-console  # URL path for the H2 console
+
+  jpa:
+    defer-datasource-initialization: true # if you want to add data in the table using sql script
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update  # Automatically update the schema
+    show-sql: true  # Display SQL statements in the logs
+    generate-ddl: true
+    properties:
+      hibernate:
+        format_sql: true              # Format the SQL for better readability
+#  sql:
+#    init:
+#      mode: EMBEDDED
+kafka:
+  topic:
+    name:
+      payment: payment-topic
+      order: order-topic
+      inventory: inventory-topic
